@@ -2,15 +2,6 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-let speed = 7;
-let tileCount = 20;
-let tileSize = 18;
-let headX = 10;
-let headY = 10;
-
-//Pontos
-let score = 0;
-
 class snakePart{
     constructor(x, y){
         this.x = x;
@@ -18,17 +9,26 @@ class snakePart{
     }
 }
 
-//Exibir maçã no jogo
-let appleX = 5;
-let appleY = 5; 
+let speed = 7;
+let tileCount = 20;
+let tileSize = 18;
+let headX = 10;
+let headY = 10;
 
-//Iniciar a velocidade da cobra
+//Matriz que define as partes
+const snakeParts = [];
+let tailLength = 2; //Parte inicial snake
+
+//Velocidade início
 let xvelocity = 0;
 let yvelocity = 0;
 
-//Matriz que define as partes da cobra
-const snakeParts = [];
-let tailLength = 2; //Parte inicial da cobra
+//Exibe maçã no jogo
+let appleX = 5;
+let appleY = 5;
+
+//Pontos
+let score = 0;
 
 
 // Função principal do jogo
@@ -37,12 +37,13 @@ function drawGame() {
     changeSnakePosition();
     //Lógica Game Over
     let result = isGameOver();
-    if(result){ //Se o resultado for verdadeiro, pare as funções seguintes
+    if(result){ //Se o resultado for verdadeiro, pare as funções seguintes        
         return;
     }
 
     clearScreen();
-    drawSnake();    
+    drawSnake();
+    checkCollision();    
     drawApple();
     drawScore();
 
@@ -89,10 +90,16 @@ function isGameOver(){
         ctx.font="50px verdana";
         ctx.fillText("Game Over!", canvas.clientWidth/6.5, canvas.clientHeight/2);
     }
+
     return gameOver;
 }
 
-
+//Função dos pontos
+function drawScore(){
+    ctx.fillStyle = "white";
+    ctx.font = "13px verdana";
+    ctx.fillText("Score: " +score, canvas.clientWidth-77,15); //posicionar pontos no canto direito
+}
 
 //Cor de fundo
 function clearScreen() {
@@ -105,28 +112,20 @@ function drawSnake(){
     ctx.fillStyle = "green";
    
     //Percorre a matriz de partes da cobra   
-    for(let i = 0; i < snakeParts.length; i++){
+    for(let i = 0; i<snakeParts.length; i++){
         
         //Desenha as partes da cobra
-        let part = snakeParts[i]
-        ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize)
+        let part = snakeParts[i];
+        ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize);
     }
 
     snakeParts.push(new snakePart(headX, headY)); //Coloca o item no final
+    if(snakeParts.length>tailLength){
+        snakeParts.shift();
+    } 
 
     ctx.fillStyle = "orange";
     ctx.fillRect(headX*tileCount, headY*tileCount, tileSize, tileSize);
-}
-
-function drawApple(){
-    ctx.fillStyle = "red";
-    ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize); //Posição da maçã dentro da contagem de bloco
-}
- //Função dos pontos
-function drawScore(){
-    ctx.fillStyle = "white";
-    ctx.font = "13px verdana";
-    ctx.fillText("Score: " +score, canvas.clientWidth-77,15); //posicionar pontos no canto direito
 }
 
 function changeSnakePosition(){
@@ -134,19 +133,24 @@ function changeSnakePosition(){
     headY = headY + yvelocity;
 }
 
+function drawApple(){
+    ctx.fillStyle = "red";
+    ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize); //Posição da maçã dentro da contagem de bloco
+}
+
 //Checa o contato da cobra com a maçã
 function checkCollision(){
-    if(appleX == headX && appleY == headY){
+    if(appleX == headX && appleY==headY){
 
         appleX = Math.floor(Math.random() * tileCount); //Gera a maçã na posição vertical
         appleY = Math.floor(Math.random() * tileCount); //Gera a maçã na posição horizontal
-        tailLength ++; //incrementa o tamanho
-        score ++; //incrementa a pontuação
+        tailLength++; //incrementa o tamanho
+        score++; //incrementa a pontuação
     }
 }
 
-//Adcionar o ouvinte de evento no body
-document.body.addEventListener('Keydown', keyDown);
+//Adicionar o ouvinte de evento no body
+document.body.addEventListener('keydown', keyDown);
 
 function keyDown(){
 
