@@ -1,5 +1,4 @@
 //Pegando os elementos e definido a área do jogo
-
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -8,6 +7,9 @@ let tileCount = 20;
 let tileSize = 18;
 let headX = 10;
 let headY = 10;
+
+//Pontos
+let score = 0;
 
 class snakePart{
     constructor(x, y){
@@ -25,19 +27,72 @@ let xvelocity = 0;
 let yvelocity = 0;
 
 //Matriz que define as partes da cobra
-const snakeParts =[];
+const snakeParts = [];
 let tailLength = 2; //Parte inicial da cobra
 
 
 // Função principal do jogo
 function drawGame() {
-    clearScreen();
-    drawSnake();
+
     changeSnakePosition();
+    //Lógica Game Over
+    let result = isGameOver();
+    if(result){ //Se o resultado for verdadeiro, pare as funções seguintes
+        return;
+    }
+
+    clearScreen();
+    drawSnake();    
     drawApple();
+    drawScore();
 
     setTimeout(drawGame, 1000/speed); //Atualiza a tela 7 vezes por segundo
 }
+
+//Função Game Over
+function isGameOver(){
+    let gameOver = false; 
+    
+    //Verifica se o jogo começou
+    if(yvelocity ===0 && xvelocity ===0){
+        return false;
+    }
+
+    if(headX < 0){ //Se a cobra atingir a parede esquerda
+        gameOver = true;
+    }
+
+    else if(headX === tileCount){ //Se a cobra atingir a parede da direita
+        gameOver = true;
+    }
+
+    else if(headY < 0){ //Se a cobra atingir a parte superior
+        gameOver = true;
+    }
+
+    else if(headY===tileCount){ //Se a cobra atingir a parte inferior
+        gameOver = true;
+    }
+
+    //Parar quando a cobrar encostar em si mesma
+    for(let i=0; i<snakeParts.length; i++){
+        let part = snakeParts[i];
+        if(part.x === headX && part.y === headY){
+            gameOver = true;
+            break;
+        }        
+    }
+
+    //Texto na trela
+    if(gameOver){
+        ctx.fillStyle="white";
+        ctx.font="50px verdana";
+        ctx.fillText("Game Over!", canvas.clientWidth/6.5, canvas.clientHeight/2);
+    }
+    return gameOver;
+}
+
+
 
 //Cor de fundo
 function clearScreen() {
@@ -46,10 +101,12 @@ function clearScreen() {
 }
 
 function drawSnake(){
-    ctx.fillStyle = "green";
 
-    //Percorre a matriz de partes da cobra
-    for(let i = 0;i<snakeParts.length;i++){
+    ctx.fillStyle = "green";
+   
+    //Percorre a matriz de partes da cobra   
+    for(let i = 0; i < snakeParts.length; i++){
+        
         //Desenha as partes da cobra
         let part = snakeParts[i]
         ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize)
@@ -65,24 +122,33 @@ function drawApple(){
     ctx.fillStyle = "red";
     ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize); //Posição da maçã dentro da contagem de bloco
 }
+ //Função dos pontos
+function drawScore(){
+    ctx.fillStyle = "white";
+    ctx.font = "13px verdana";
+    ctx.fillText("Score: " +score, canvas.clientWidth-77,15); //posicionar pontos no canto direito
+}
 
 function changeSnakePosition(){
     headX = headX + xvelocity;
     headY = headY + yvelocity;
 }
 
+//Checa o contato da cobra com a maçã
 function checkCollision(){
-    if(appleX == headX && appleY == headY){ //Colisão da maçã com a cobra
+    if(appleX == headX && appleY == headY){
+
         appleX = Math.floor(Math.random() * tileCount); //Gera a maçã na posição vertical
         appleY = Math.floor(Math.random() * tileCount); //Gera a maçã na posição horizontal
+        tailLength ++; //incrementa o tamanho
+        score ++; //incrementa a pontuação
     }
-
 }
 
 //Adcionar o ouvinte de evento no body
-document.body.addEventListener("Keydown", keyDown);
+document.body.addEventListener('Keydown', keyDown);
 
-function keyDown(event){
+function keyDown(){
 
     //Cima
     if(event.keyCode == 38){
@@ -96,7 +162,7 @@ function keyDown(event){
     if(event.keyCode == 40){
         if(yvelocity == -1)
         return; // impede que a cobra se mova no sentido inverso
-        yvelocity = 1; //move u, bloco para baixo
+        yvelocity = 1; //move um bloco para baixo
         xvelocity = 0;
     }
 
@@ -115,7 +181,5 @@ function keyDown(event){
         yvelocity = 0;
         xvelocity = 1; //move um bloco para a direita
     }
-
 }
-
-drawGame()
+drawGame();
