@@ -88,7 +88,7 @@ function isGameOver(){
     if(gameOver){
         ctx.fillStyle="white";
         ctx.font="50px verdana";
-        ctx.fillText("Game Over!", canvas.clientWidth/6.5, canvas.clientHeight/2);
+        ctx.fillText("simatei", canvas.clientWidth/6.5, canvas.clientHeight/2);
     }
 
     return gameOver;
